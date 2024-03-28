@@ -20,3 +20,13 @@ When you're ready to unlock your tokens from the vault, simply repay the borrowe
 This is more than a financial service; it’s a pathway to multiplying your real estate portfolio. It's an ecosystem where your investments work in tandem, allowing you to scale up your holdings through a user-friendly platform designed with your aspirations in mind.
 
 The doors to a larger real estate footprint are now open. Let your RealT tokens unlock new opportunities, and watch as your weekly rental income grows with each new investment. Join us, and together, we'll redefine the possibilities within the real estate market.
+
+
+## How it's works
+
+### At start
+![Schema](img/First_strategy.png)
+
+### When rcUSD will be really integrate on the RealT ecosystem
+
+![Schema](img/Long_terme_strategy.png)
