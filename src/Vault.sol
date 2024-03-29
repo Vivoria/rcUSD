@@ -21,6 +21,7 @@ contract PersonalVault is Ownable {
 
     uint256 public realTTokenBalance;
     uint256 public loanAmount = 0;
+    uint8 LTV = 70;
 
     event Deposit(address indexed owner, uint256 amount);
 
@@ -50,13 +51,14 @@ contract PersonalVault is Ownable {
         require(amount > 0, "Amount must be greater than 0");
         require(realTTokenBalance > 0, "Deposit property tokens before borrowing");
 
-        // TODO: add LTV
         uint256 valuation = realTPropertyToken.getValuation(realTTokenBalance);
         uint8 valuationDecimals = realTPropertyToken.valuationDecimals();
 
         uint256 loanAmountWithDecimals = loanAmount * 10 ** valuationDecimals;
 
-        require(valuation >= loanAmountWithDecimals + (amount * 10 ** valuationDecimals), "Requested amount exceeds allowed credit line");
+        require(valuation >= loanAmountWithDecimals + (amount * 10 ** valuationDecimals), "Requested amount exceeds collateral valuation");
+
+        require(LTV * valuation >= 100 * (loanAmountWithDecimals + (amount * 10 ** valuationDecimals)), "Requested amount exceeds credit line");
 
         loanAmount += amount;
 
