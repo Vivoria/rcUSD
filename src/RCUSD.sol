@@ -20,6 +20,10 @@ contract RCUSD is ERC20, AccessControl, ERC20Permit {
         _grantRole(MINTER_ROLE, newMinter);
     }
 
+    function removeMinter(address minter) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        _revokeRole(MINTER_ROLE, minter);
+    }
+
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
         _mint(to, amount);
     }
