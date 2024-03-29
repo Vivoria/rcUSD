@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * It extends the OpenZeppelin ERC20 implementation.
  */
 contract RealTProperty is ERC20 {
+    uint8 public valuationDecimals = uint8(6);
     /**
      * @dev Constructor that gives msg.sender all of existing tokens.
      */
@@ -30,5 +31,11 @@ contract RealTProperty is ERC20 {
      */
     function mint(address to, uint256 amount) public {
         _mint(to, amount);
+    }
+
+    function getValuation(uint256 amount) public view returns (uint256) {
+        uint256 tokenPrice = 50 * 10 ** (valuationDecimals);
+        uint256 valuation = amount * tokenPrice;
+        return valuation;
     }
 }

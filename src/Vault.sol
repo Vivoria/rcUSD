@@ -9,17 +9,23 @@ interface IRCUSD {
     function mint(address to, uint256 amount) external;
 }
 
+interface IRealTProperty is IERC20 {
+    function valuationDecimals() external  view returns (uint8);
+    function getValuation(uint256 amount) external view returns (uint256);
+}
+
 contract PersonalVault is Ownable {
-    IERC20 public realTPropertyToken; // The ERC20 token for RealT properties
+    IRealTProperty public realTPropertyToken; // The ERC20 token for RealT properties
 
     IRCUSD public rcUSDToken;
 
     uint256 public realTTokenBalance;
+    uint256 public loanAmount = 0;
 
     event Deposit(address indexed owner, uint256 amount);
 
     constructor(address _realTPropertyTokenAddress, address _rcUSDAddress) Ownable(msg.sender) {
-        realTPropertyToken = IERC20(_realTPropertyTokenAddress);
+        realTPropertyToken = IRealTProperty(_realTPropertyTokenAddress);
         rcUSDToken = IRCUSD(_rcUSDAddress);
     }
 
@@ -44,9 +50,15 @@ contract PersonalVault is Ownable {
         require(amount > 0, "Amount must be greater than 0");
         require(realTTokenBalance > 0, "Deposit property tokens before borrowing");
 
-        // Placeholder for borrow limit logic
-        // Ensure the requested amount does not exceed the allowable borrow limit
-        // This requires a valuation of the deposited RealT tokens and any other relevant factors
+        // TODO: add LTV
+        uint256 valuation = realTPropertyToken.getValuation(realTTokenBalance);
+        uint8 valuationDecimals = realTPropertyToken.valuationDecimals();
+
+        uint256 loanAmountWithDecimals = loanAmount * 10 ** valuationDecimals;
+
+        require(valuation >= loanAmountWithDecimals + (amount * 10 ** valuationDecimals), "Requested amount exceeds allowed credit line");
+
+        loanAmount += amount;
 
         rcUSDToken.mint(msg.sender, amount);
     }
