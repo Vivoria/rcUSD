@@ -20,7 +20,6 @@ contract PersonalVault is Ownable {
     IRCUSD public rcUSDToken;
 
     uint256 public realTTokenBalance;
-    uint256 public loanAmount = 0;
     uint8 LTV = 70;
 
     uint256 public constant ANNUAL_INTEREST_RATE = 10; // 10% annual interest rate
@@ -68,13 +67,14 @@ contract PersonalVault is Ownable {
         uint256 valuation = realTPropertyToken.getValuation(realTTokenBalance);
         uint8 valuationDecimals = realTPropertyToken.valuationDecimals();
 
-        uint256 loanAmountWithDecimals = loanAmount * 10 ** valuationDecimals;
+        Loan storage loan = loans[msg.sender];
+
+        uint256 loanAmountWithDecimals = loan.balance * 10 ** valuationDecimals;
 
         require(valuation >= loanAmountWithDecimals + (amount * 10 ** valuationDecimals), "Requested amount exceeds collateral valuation");
 
         require(LTV * valuation >= 100 * (loanAmountWithDecimals + (amount * 10 ** valuationDecimals)), "Requested amount exceeds credit line");
 
-        Loan storage loan = loans[msg.sender];
         if (loan.principal == 0) { // Check if the loan doesn't exist
             // Create the loan
             loans[msg.sender] = Loan({
@@ -91,7 +91,6 @@ contract PersonalVault is Ownable {
             loan.lastInterestCalculationTime = block.timestamp;
         }
 
-        loanAmount += amount;
         rcUSDToken.mint(msg.sender, amount);
     }
 
@@ -109,5 +108,5 @@ contract PersonalVault is Ownable {
 
 
 
-    // Future implementations can add withdrawal, borrowing, and other functionalities.
+    // Future implementations can add withdrawal, repayment and other functionalities.
 }
