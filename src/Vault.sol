@@ -23,6 +23,20 @@ contract PersonalVault is Ownable {
     uint256 public loanAmount = 0;
     uint8 LTV = 70;
 
+    uint256 public constant ANNUAL_INTEREST_RATE = 10; // 10% annual interest rate
+    uint256 public constant INTEREST_RATE_DIVISOR = 100; // Used for calculation, to avoid floating points
+    uint256 public constant SECONDS_IN_A_YEAR = 31_557_600;
+
+    struct Loan {
+        uint256 principal; // The original amount of the loan
+        uint256 balance; // Current loan balance, including interest
+        uint256 interestRate; // Interest rate for this loan
+        uint256 lastInterestCalculationTime; // When was the interest last calculated
+    }
+
+    mapping(address => Loan) public loans;
+
+
     event Deposit(address indexed owner, uint256 amount);
 
     constructor(address _realTPropertyTokenAddress, address _rcUSDAddress) Ownable(msg.sender) {
@@ -60,10 +74,40 @@ contract PersonalVault is Ownable {
 
         require(LTV * valuation >= 100 * (loanAmountWithDecimals + (amount * 10 ** valuationDecimals)), "Requested amount exceeds credit line");
 
-        loanAmount += amount;
+        Loan storage loan = loans[msg.sender];
+        if (loan.principal == 0) { // Check if the loan doesn't exist
+            // Create the loan
+            loans[msg.sender] = Loan({
+                principal: amount,
+                balance: amount,
+                interestRate: ANNUAL_INTEREST_RATE,
+                lastInterestCalculationTime: block.timestamp
+            });
+        } else {
+            uint256 interestAmount = getInterest(msg.sender);
+            loan.balance += interestAmount;
+            loan.balance += amount;
+            loan.principal += amount;
+            loan.lastInterestCalculationTime = block.timestamp;
+        }
 
+        loanAmount += amount;
         rcUSDToken.mint(msg.sender, amount);
     }
+
+    function getInterest(address borrower) public view returns (uint256) {
+        Loan memory loan = loans[borrower];
+        require(loan.principal > 0, "Loan does not exist");
+
+        uint256 timeElapsed = block.timestamp - loan.lastInterestCalculationTime;
+        uint256 interestAmount = 0;
+        if (timeElapsed > 0) {
+            interestAmount = (loan.balance * loan.interestRate * timeElapsed) / (SECONDS_IN_A_YEAR * INTEREST_RATE_DIVISOR);
+        }
+        return interestAmount;
+    }
+
+
 
     // Future implementations can add withdrawal, borrowing, and other functionalities.
 }
