@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-interface IRCUSD {
+interface IRCUSD is IERC20 {
     function mint(address to, uint256 amount) external;
 }
 
@@ -106,7 +106,21 @@ contract PersonalVault is Ownable {
         return interestAmount;
     }
 
+    function fullyRepayLoan() external {
+        address borrower = msg.sender;
+        Loan storage loan = loans[borrower]; // Use storage to modify the loan state
+        uint256 interestAmount = getInterest(msg.sender);
+        uint256 totalRepaymentAmount = loan.balance + interestAmount;
+        require(rcUSDToken.balanceOf(borrower) >= totalRepaymentAmount, "Insufficient rcUSD to repay the loan");
+
+        require(rcUSDToken.transferFrom(msg.sender, address(this), totalRepaymentAmount), "Transfer failed");
+
+        // Consider updating state (deleting loan) after external calls
+        delete loans[borrower];
+    }
 
 
-    // Future implementations can add withdrawal, repayment and other functionalities.
+
+
+    // Future implementations can add withdrawal and other functionalities.
 }
