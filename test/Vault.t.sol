@@ -103,6 +103,37 @@ contract VaultTest is Test {
         vm.stopPrank();
     }
 
+    function testFullyRepayLoan() public {
+        uint256 startAt = block.timestamp;
+
+
+        testBorrow();
+
+        uint256 mintedRCUSD = 1000e18;
+
+        vm.warp(startAt + 100 days);
+        uint256 upperRange = 360e18;
+        uint256 lowerRange = 359e18;
+        
+        vm.startPrank(admin);
+        rcUSD.addMinter(admin);
+        rcUSD.mint(address(user), mintedRCUSD );
+        vm.stopPrank();
+
+        vm.startPrank(user);
+        rcUSD.approve(address(vault), mintedRCUSD);
+        vault.fullyRepayLoan();
+        
+
+        uint256 vaultRCUSDBalance = rcUSD.balanceOf(address(vault));
+        uint256 userBalanceAfterRepayment = rcUSD.balanceOf(user);
+        assertGt(vaultRCUSDBalance, lowerRange);
+        assertLt(vaultRCUSDBalance, upperRange);
+
+
+        assertEq(vaultRCUSDBalance + userBalanceAfterRepayment, mintedRCUSD + 350e18);
+    }
+
     
 
 }
