@@ -29,6 +29,20 @@ contract VaultTest is Test {
         vm.stopPrank();
     }
 
+    function testDeposit() public {
+        uint256 supplyAmount = 10e18;
+        monicaPropertyToken.mint(user, supplyAmount);
+
+
+        assertEq(vault.realTTokenBalance(), 0);
+        vm.startPrank(user);
+        monicaPropertyToken.approve(address(vault), supplyAmount);
+        vault.deposit(supplyAmount);
+        vm.stopPrank();
+
+        assertEq(vault.realTTokenBalance(), supplyAmount);
+    }
+
     
 
 }
