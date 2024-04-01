@@ -35,12 +35,15 @@ contract VaultTest is Test {
 
 
         assertEq(vault.realTTokenBalance(), 0);
+        assertEq(monicaPropertyToken.balanceOf(user), supplyAmount);
+        
         vm.startPrank(user);
         monicaPropertyToken.approve(address(vault), supplyAmount);
         vault.deposit(supplyAmount);
         vm.stopPrank();
 
         assertEq(vault.realTTokenBalance(), supplyAmount);
+        assertEq(monicaPropertyToken.balanceOf(user), 0);
     }
 
     
