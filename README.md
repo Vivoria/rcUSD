@@ -1,5 +1,7 @@
 # rcUSD
 
+![example workflow](https://github.com/Vivoria/rcUSD/actions/workflows/test.yml/badge.svg)
+
 ![Schema](img/Schema.png)
 
 Introducing our state-of-the-art vault service, where your RealT property tokens are not just a part of your investment portfolio, but also a gateway to expand it. This is an open invitation to all RealT token holders, whether it's "Monica" or any other property in the RealT catalogue. Our vision is to encompass the entire spectrum of RealT's tokenized properties, providing you with a versatile financial tool.
