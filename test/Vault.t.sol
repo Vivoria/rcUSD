@@ -29,6 +29,13 @@ contract VaultTest is Test {
         vm.stopPrank();
     }
 
+    function deposit(uint256 supplyAmount) internal {
+        vm.startPrank(user);
+        monicaPropertyToken.approve(address(vault), supplyAmount);
+        vault.deposit(supplyAmount);
+        vm.stopPrank();
+    }
+
     function testDeposit() public {
         uint256 supplyAmount = 10e18;
         monicaPropertyToken.mint(user, supplyAmount);
@@ -36,14 +43,64 @@ contract VaultTest is Test {
 
         assertEq(vault.realTTokenBalance(), 0);
         assertEq(monicaPropertyToken.balanceOf(user), supplyAmount);
+        deposit(supplyAmount);
         
-        vm.startPrank(user);
-        monicaPropertyToken.approve(address(vault), supplyAmount);
-        vault.deposit(supplyAmount);
-        vm.stopPrank();
-
         assertEq(vault.realTTokenBalance(), supplyAmount);
         assertEq(monicaPropertyToken.balanceOf(user), 0);
+    }
+
+    function testBorrow() public {
+        uint256 supplyAmount = 10e18;
+        monicaPropertyToken.mint(user, supplyAmount);
+        
+        uint256 borrowAmount = 350e18;
+
+        deposit(supplyAmount);
+        vm.startPrank(admin);
+        rcUSD.addMinter(address(vault));
+        vm.stopPrank();
+
+        vm.startPrank(user);
+        vault.borrow(borrowAmount);
+        vm.stopPrank();
+        assertEq(rcUSD.balanceOf(user), borrowAmount);
+
+    }
+
+    function testBorrowOverLTV() public {
+        uint256 supplyAmount = 10e18;
+        monicaPropertyToken.mint(user, supplyAmount);
+        
+        uint256 borrowAmount = 351e18;
+
+        deposit(supplyAmount);
+        
+        vm.startPrank(admin);
+        rcUSD.addMinter(address(vault));
+        vm.stopPrank();
+
+        vm.startPrank(user);
+        vm.expectRevert(bytes("Requested amount exceeds credit line"));
+        vault.borrow(borrowAmount);
+        vm.stopPrank();
+    }
+
+    function testBorrowOverValuation() public {
+        uint256 supplyAmount = 10e18;
+        monicaPropertyToken.mint(user, supplyAmount);
+        
+        uint256 borrowAmount = 501e18;
+
+        deposit(supplyAmount);
+        
+        vm.startPrank(admin);
+        rcUSD.addMinter(address(vault));
+        vm.stopPrank();
+
+        vm.startPrank(user);
+        vm.expectRevert(bytes("Requested amount exceeds collateral valuation"));
+        vault.borrow(borrowAmount);
+        vm.stopPrank();
     }
 
     
