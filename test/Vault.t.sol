@@ -18,12 +18,12 @@ contract VaultTest is Test {
 
     function setUp() public {
         rcUSD = new RCUSD(admin);
-        monicaPropertyToken = new RealTProperty("Monica", "Monica", 0);
-
         
-
-
         vm.startPrank(deployer);
+        monicaPropertyToken = new RealTProperty("Monica", "Monica", 0);
+        vm.stopPrank();
+
+        vm.startPrank(user);
         vault = new PersonalVault(address(monicaPropertyToken), address(rcUSD));
 
         vm.stopPrank();
